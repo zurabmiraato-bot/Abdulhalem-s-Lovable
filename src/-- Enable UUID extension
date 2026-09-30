@@ -1,0 +1,106 @@
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Create profiles table
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email VARCHAR(255) NOT NULL,
+  subscription_status VARCHAR(50) DEFAULT 'free',
+  credits_remaining INTEGER DEFAULT 3,
+  paypal_email VARCHAR(255),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create client_profiles table
+CREATE TABLE IF NOT EXISTS public.client_profiles (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  business_name VARCHAR(255) NOT NULL,
+  industry VARCHAR(255) NOT NULL,
+  location VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create user_generations table
+CREATE TABLE IF NOT EXISTS public.user_generations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  client_profile_id UUID REFERENCES public.client_profiles(id) ON DELETE SET NULL,
+  input_params JSONB NOT NULL,
+  generated_kit JSONB NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create payments table
+CREATE TABLE IF NOT EXISTS public.payments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  paypal_transaction_id VARCHAR(255) UNIQUE,
+  amount DECIMAL(10, 2) NOT NULL,
+  currency VARCHAR(3) DEFAULT 'USD',
+  status VARCHAR(50) DEFAULT 'pending',
+  plan_type VARCHAR(50),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Enable RLS
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.client_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_generations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+
+-- Policies for profiles
+CREATE POLICY "Users can view their own profile"
+  ON public.profiles FOR SELECT
+  USING (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile"
+  ON public.profiles FOR UPDATE
+  USING (auth.uid() = id);
+
+-- Policies for client_profiles
+CREATE POLICY "Users can view their own client profiles"
+  ON public.client_profiles FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create their own client profiles"
+  ON public.client_profiles FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own client profiles"
+  ON public.client_profiles FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own client profiles"
+  ON public.client_profiles FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- Policies for user_generations
+CREATE POLICY "Users can view their own generations"
+  ON public.user_generations FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create their own generations"
+  ON public.user_generations FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own generations"
+  ON public.user_generations FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- Policies for payments
+CREATE POLICY "Users can view their own payments"
+  ON public.payments FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Service role can manage all payments"
+  ON public.payments FOR ALL
+  USING (auth.role() = 'service_role');
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_client_profiles_user_id ON public.client_profiles(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_generations_user_id ON public.user_generations(user_id);
+CREATE INDEX IF NOT EXISTS idx_payments_user_id ON public.payments(user_id);
+CREATE INDEX IF NOT EXISTS idx_payments_transaction_id ON public.payments(paypal_transaction_id);
