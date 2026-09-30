@@ -1,0 +1,96 @@
+# Verification Scripts
+
+## Pre-Deployment Checklist
+
+```bash
+# 1. Check Node version
+node --version  # Should be 18+
+
+# 2. Install dependencies
+npm install
+cd server && npm install && cd ..
+
+# 3. Check environment variables
+echo $SUPABASE_URL
+echo $PAYPAL_CLIENT_ID
+echo $LLM_API_KEY
+
+# 4. Test build
+npm run build
+cd server && npm run build && cd ..
+
+# 5. Test server locally
+cd server
+npm run dev
+# Should show: "🚀 LocalRank AI Server running on port 3001"
+
+# 6. Test frontend locally
+cd ..
+npm run dev
+# Should show: "VITE ready"
+
+# 7. Verify Supabase connection
+# Sign up in UI and check Supabase Auth > Users
+
+# 8. Verify PayPal connection
+# Try upgrading and confirm PayPal redirect
+
+# 9. Check GitHub Actions
+# Visit repo Action tab
+```
+
+## Deployment Verification
+
+```bash
+# 1. Check Vercel deployments
+vercel ls
+
+# 2. Check frontend is live
+curl https://your-frontend.vercel.app/
+
+# 3. Check backend is live
+curl https://your-backend.vercel.app/api/health
+
+# 4. Check Supabase
+# Table Editor > payments and profiles
+
+# 5. Check PayPal webhook
+# Developer Dashboard > Webhooks
+```
+
+## Troubleshooting
+
+```bash
+# Check GitHub Actions logs
+# Visit Actions tab
+
+# Check Vercel logs
+vercel logs
+
+# Test API endpoint
+curl -H "x-user-id: your-user-id" \
+  -X POST http://localhost:3001/api/generate-seo-kit \
+  -H "Content-Type: application/json" \
+  -d '{
+    "business_name": "Test",
+    "industry": "Plumbing",
+    "location": "Austin, TX",
+    "focus_offer": "24/7 Service",
+    "tone": "Professional"
+  }'
+```
+
+## Final Production Checklist
+
+- [ ] Supabase project created
+- [ ] Database migrations run
+- [ ] PayPal app created
+- [ ] OpenAI key added
+- [ ] Vercel tokens and project IDs added to GitHub secrets
+- [ ] Frontend deploys successfully
+- [ ] Backend deploys successfully
+- [ ] PayPal webhook working
+- [ ] Test purchase succeeds
+- [ ] User receives Pro subscription
+- [ ] Credits update to 1000
+- [ ] App works in production
