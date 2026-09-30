@@ -1,0 +1,208 @@
+# LocalRank AI Deployment Guide
+
+## Overview
+
+LocalRank AI is a full-stack web application for generating local SEO content using AI. This guide covers deployment to Vercel using GitHub Actions.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    LocalRank AI Platform                     │
+├─────────────────────────────────────────────────────────────┤
+│  Frontend (React + Tailwind)    │    Backend (Express.js)    │
+│  Deployed on Vercel             │    Deployed on Vercel      │
+│  - Landing Page                 │    - AI Generation API     │
+│  - Dashboard                    │    - PayPal Checkout       │
+│  - User Auth (Supabase)         │    - PayPal Webhook        │
+├─────────────────────────────────────────────────────────────┤
+│                    Supabase Database                         │
+│  - Authentication (auth.users)                              │
+│  - User Profiles & Credits                                  │
+│  - Generated SEO Kits                                        │
+│  - Payment History                                          │
+├─────────────────────────────────────────────────────────────┤
+│                  External Services                           │
+│  - PayPal: Payment Processing (09977457879)                 │
+│  - OpenAI: Content Generation                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Prerequisites
+
+1. GitHub account
+2. Supabase account
+3. PayPal Developer account
+4. OpenAI account
+5. Vercel account
+
+## Step-by-Step Setup
+
+### 1. Supabase Setup
+- Create new project
+- Copy Project URL and API keys
+- Run SQL migrations in SQL Editor
+- Verify tables created
+
+**Save these values:**
+```
+SUPABASE_URL =
+SUPABASE_ANON_KEY =
+SUPABASE_SERVICE_ROLE_KEY =
+```
+
+### 2. PayPal Setup
+- Create REST API app
+- Get Client ID and Secret
+- Note receiver: **09977457879**
+
+**Save these values:**
+```
+PAYPAL_CLIENT_ID =
+PAYPAL_CLIENT_SECRET =
+PAYPAL_MODE = sandbox
+PAYPAL_RECEIVER_ACCOUNT = 09977457879
+PAYPAL_RECEIVER_EMAIL = (your verified paypal business email)
+```
+
+### 3. OpenAI Setup
+- Create API key
+- Save:
+```
+LLM_API_KEY =
+```
+
+### 4. Vercel Setup
+- Create frontend project from repo root
+- Create backend project from `server` folder
+- Get token and project IDs
+
+**Save these values:**
+```
+VERCEL_TOKEN =
+VERCEL_ORG_ID =
+VERCEL_PROJECT_ID_FRONTEND =
+VERCEL_PROJECT_ID_BACKEND =
+FRONTEND_URL = https://your-frontend.vercel.app
+```
+
+### 5. GitHub Setup
+Add all these secrets in:
+https://github.com/zurabmiraato-bot/Abdulhalem-s-Lovable/settings/secrets/actions
+
+| Secret Name | Value |
+|-------------|-------|
+| SUPABASE_URL | your_supabase_url |
+| SUPABASE_ANON_KEY | your_anon_key |
+| SUPABASE_SERVICE_ROLE_KEY | your_service_role_key |
+| PAYPAL_CLIENT_ID | your_paypal_client_id |
+| PAYPAL_CLIENT_SECRET | your_paypal_client_secret |
+| PAYPAL_RECEIVER_ACCOUNT | 09977457879 |
+| PAYPAL_RECEIVER_EMAIL | your_business_email |
+| PAYPAL_MODE | sandbox |
+| LLM_API_KEY | your_openai_key |
+| VERCEL_TOKEN | your_vercel_token |
+| VERCEL_ORG_ID | your_org_id |
+| VERCEL_PROJECT_ID_FRONTEND | frontend_project_id |
+| VERCEL_PROJECT_ID_BACKEND | backend_project_id |
+| NODE_ENV | production |
+| FRONTEND_URL | https://your-frontend.vercel.app |
+
+### 6. Deploy
+
+```bash
+git push origin main
+```
+
+GitHub Actions will automatically:
+- Build frontend and backend
+- Run tests
+- Deploy to Vercel
+
+### 7. PayPal Webhook Configuration
+
+After backend deploys:
+- Go to PayPal Developer Dashboard
+- Add webhook endpoint:
+  - URL: `https://your-backend-domain.com/api/paypal-webhook`
+  - Events:
+    - PAYMENT.SALE.COMPLETED
+    - BILLING.SUBSCRIPTION.CANCELLED
+
+### 8. Test the Application
+
+1. Visit frontend URL
+2. Sign up with test email
+3. Go to dashboard
+4. Generate SEO kit
+5. Upgrade to Pro
+6. Complete PayPal sandbox payment
+7. Verify credits update to 1000
+
+## Environment Variables Reference
+
+### Frontend
+```bash
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_anon_key
+VITE_PAYPAL_CLIENT_ID=your_paypal_client_id
+VITE_PAYPAL_MODE=sandbox
+VITE_API_BASE_URL=https://your-backend.vercel.app
+```
+
+### Backend
+```bash
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+PAYPAL_MODE=sandbox
+PAYPAL_CLIENT_ID=your_paypal_client_id
+PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+PAYPAL_RECEIVER_ACCOUNT=09977457879
+PAYPAL_RECEIVER_EMAIL=your_business_email
+LLM_API_KEY=your_openai_key
+NODE_ENV=production
+PORT=3001
+FRONTEND_URL=https://your-frontend.vercel.app
+```
+
+## Monitoring & Maintenance
+
+### Check Deployment Status
+- GitHub Actions tab
+- Vercel logs
+- Supabase logs
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Payment fails | Check PAYPAL_MODE and credentials |
+| Credits not deducting | Check Supabase RLS |
+| API returns 401 | Check x-user-id header |
+| Build fails | Check env vars on Vercel |
+
+## Going Live (Production)
+
+### 1. Create Live PayPal App
+- Get live credentials
+- Update secrets
+
+### 2. Update GitHub Secrets
+```
+PAYPAL_MODE = live
+PAYPAL_CLIENT_ID = your_live_client_id
+PAYPAL_CLIENT_SECRET = your_live_client_secret
+```
+
+### 3. Update PayPal Webhook
+- Change to production backend URL
+
+### 4. Test with Real Payment
+- Verify payment appears in PayPal account
+- Verify user receives Pro subscription
+
+---
+
+**Payment Receiver: 09977457879**
+
+All subscription payments ($19/month Pro plan) are received at this PayPal account.
