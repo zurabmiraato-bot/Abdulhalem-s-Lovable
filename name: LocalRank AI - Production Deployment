@@ -1,0 +1,58 @@
+name: LocalRank AI - Production Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install frontend dependencies
+        run: npm install
+      
+      - name: Install backend dependencies
+        run: cd server && npm install
+      
+      - name: Build frontend
+        run: npm run build
+      
+      - name: Build backend
+        run: cd server && npm run build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy to Vercel (Frontend)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_FRONTEND }}
+        run: |
+          npm i -g vercel
+          vercel deploy --prod --token $VERCEL_TOKEN
+      
+      - name: Deploy to Vercel (Backend)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_BACKEND }}
+        run: |
+          cd server
+          vercel deploy --prod --token $VERCEL_TOKEN
+      
+      - name: Notify Deployment Success
+        run: echo "✅ LocalRank AI deployed successfully!"
