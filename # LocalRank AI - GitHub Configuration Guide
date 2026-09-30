@@ -1,0 +1,170 @@
+# LocalRank AI - GitHub Configuration Guide
+
+## Quick Start for GitHub Deployment
+
+### Step 1: Add GitHub Secrets
+
+Go to: **Settings > Secrets and variables > Actions**
+
+Add these secrets:
+
+#### Supabase
+```
+SUPABASE_URL = your_supabase_project_url
+SUPABASE_ANON_KEY = your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY = your_supabase_service_role_key
+```
+
+#### PayPal (Sandbox Testing)
+```
+PAYPAL_CLIENT_ID = your_paypal_sandbox_client_id
+PAYPAL_CLIENT_SECRET = your_paypal_sandbox_client_secret
+PAYPAL_RECEIVER_ACCOUNT = 09977457879
+PAYPAL_RECEIVER_EMAIL = your_verified_paypal_business_email
+PAYPAL_MODE = sandbox
+```
+
+#### OpenAI
+```
+LLM_API_KEY = your_openai_api_key
+```
+
+#### Vercel
+```
+VERCEL_TOKEN = your_vercel_token
+VERCEL_ORG_ID = your_vercel_org_id
+VERCEL_PROJECT_ID_FRONTEND = frontend_project_id
+VERCEL_PROJECT_ID_BACKEND = backend_project_id
+```
+
+#### Environment
+```
+NODE_ENV = production
+FRONTEND_URL = https://your-frontend.vercel.app
+```
+
+### Step 2: Create Supabase Project
+
+1. Go to [supabase.com](https://supabase.com)
+2. Create new project
+3. Copy Project URL and API keys
+4. Run SQL migrations in Supabase SQL editor (from `db/migrations.sql`)
+5. Verify tables exist:
+   - profiles
+   - client_profiles
+   - user_generations
+   - payments
+
+### Step 3: Create PayPal App
+
+1. Go to [developer.paypal.com](https://developer.paypal.com)
+2. Create REST API app
+3. Get Client ID and Secret (sandbox mode)
+4. Verify `09977457879` is your business receiver or merchant-linked account
+
+### Step 4: Get OpenAI Key
+
+1. Go to [platform.openai.com](https://platform.openai.com)
+2. Create API key
+3. Add to GitHub secrets
+
+### Step 5: Setup Vercel
+
+1. Go to [vercel.com](https://vercel.com)
+2. Create 2 projects:
+   - Frontend (root folder)
+   - Backend (server folder)
+3. Get Vercel token from account settings
+4. Add all secrets to GitHub
+
+### Step 6: Deploy
+
+```bash
+git push origin main
+```
+
+GitHub Actions will automatically:
+- Run tests
+- Build frontend and backend
+- Deploy to Vercel
+
+## Local Testing Before Deployment
+
+```bash
+# Install dependencies
+npm install
+cd server && npm install && cd ..
+
+# Create .env.local and server/.env with secrets
+# Run development servers
+npm run dev
+# In another terminal:
+cd server && npm run dev
+
+# Visit http://localhost:3000
+```
+
+## PayPal Webhook Setup
+
+After backend deploys successfully:
+
+1. Go to PayPal Developer Dashboard
+2. Create webhook endpoint:
+   - URL: `https://your-backend.vercel.app/api/paypal-webhook`
+   - Events:
+     - PAYMENT.SALE.COMPLETED
+     - BILLING.SUBSCRIPTION.CANCELLED
+
+## Production Checklist
+
+- [ ] Supabase project created
+- [ ] Database migrations run
+- [ ] PayPal app created (sandbox)
+- [ ] OpenAI API key obtained
+- [ ] Vercel projects created
+- [ ] All GitHub secrets added
+- [ ] Webhook URL configured in PayPal
+- [ ] Initial deployment successful
+- [ ] Test payment completed
+- [ ] User subscription upgrade works
+- [ ] Credits are deducted properly
+
+## Live Deployment (Production)
+
+When ready to go live:
+
+1. Update `PAYPAL_MODE` from `sandbox` to `live`
+2. Update `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` to live credentials
+3. Update PayPal webhook to live endpoint
+4. Test with real payment (small amount)
+5. Verify payment arrives at your PayPal business account
+
+## Monitoring
+
+### GitHub Actions
+Go to **Actions** tab to see deployment status
+
+### Vercel Logs
+```bash
+vercel logs
+```
+
+### Supabase Logs
+Go to Supabase dashboard > Logs
+
+### PayPal Webhooks
+Go to Developer Dashboard > Webhooks > Event Log
+
+## Support
+
+For deployment issues:
+1. Check GitHub Actions logs
+2. Check Vercel logs
+3. Check Supabase logs
+4. Verify all secrets are correctly added
+
+---
+
+**Payment Receiver: 09977457879**
+
+All subscription payments will be received at this PayPal account.
