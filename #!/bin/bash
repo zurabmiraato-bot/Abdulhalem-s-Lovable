@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# LocalRank AI - Quick Setup Script
+
+echo "🚀 LocalRank AI - Quick Setup"
+echo "============================="
+echo ""
+
+# Check if .env.local exists
+if [ ! -f .env.local ]; then
+    echo "📝 Creating .env.local file..."
+    cat > .env.local << 'EOF'
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_PAYPAL_CLIENT_ID=your_paypal_client_id
+VITE_PAYPAL_MODE=sandbox
+VITE_API_BASE_URL=http://localhost:3001
+EOF
+    echo "✅ .env.local created. Please update with your values."
+else
+    echo "✅ .env.local already exists"
+fi
+
+# Check if server/.env exists
+if [ ! -f server/.env ]; then
+    echo "📝 Creating server/.env file..."
+    cat > server/.env << 'EOF'
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+PAYPAL_MODE=sandbox
+PAYPAL_CLIENT_ID=your_paypal_client_id
+PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+PAYPAL_RECEIVER_ACCOUNT=09977457879
+PAYPAL_RECEIVER_EMAIL=your_paypal_business_email
+LLM_API_KEY=your_openai_api_key
+NODE_ENV=development
+PORT=3001
+FRONTEND_URL=http://localhost:3000
+EOF
+    echo "✅ server/.env created. Please update with your values."
+else
+    echo "✅ server/.env already exists"
+fi
+
+echo ""
+echo "📦 Installing dependencies..."
+npm install
+
+echo "📦 Installing backend dependencies..."
+cd server
+npm install
+cd ..
+
+echo ""
+echo "✅ Setup complete!"
+echo ""
+echo "Next steps:"
+echo "1. Update .env.local with your Supabase and PayPal credentials"
+echo "2. Update server/.env with backend secrets"
+echo "3. Run Supabase migrations: db/migrations.sql"
+echo "4. Start development: npm run dev"
+echo "5. In another terminal: cd server && npm run dev"
+echo ""
+echo "📖 Full guide: https://github.com/zurabmiraato-bot/Abdulhalem-s-Lovable/blob/main/GITHUB_SETUP.md"
